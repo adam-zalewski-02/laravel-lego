@@ -1,0 +1,292 @@
+openapi: "3.0.0"
+info:
+  version: "0.0.1"
+  title: "LEGO Set API"
+  description: "API for LEGO sets"
+servers:
+  - url: http://lego.howest/api/
+    description: "Local API"
+paths:
+  /sets:
+    get:
+      summary: "Retrieve a list of LEGO sets"
+      tags:
+        - GET
+      parameters:
+        - in: query
+          name: page
+          description: "The page of results to return. Default is 1."
+          schema:
+            type: integer
+            default: 1
+      responses:
+        "200":
+          description: "List of LEGO sets"
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/lego_set_list'
+    post:
+      security:
+        - jwtCookieAuth: []
+      summary: "Create a new LEGO set"
+      tags:
+        - POST
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/lego_set'
+      responses:
+        "201":
+          description: "LEGO set created"
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/lego_set'
+        "400":
+          description: "Invalid request payload"
+      
+  /sets/{set_number}:
+    get:
+      summary: "Retrieve a specific LEGO set"
+      tags:
+        - GET
+      parameters:
+        - in: path
+          name: set_number
+          description: "The set number of the LEGO set"
+          schema:
+            type: string
+          required: true
+      responses:
+        "200":
+          description: "LEGO set"
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/lego_set'
+    put:
+      security:
+        - jwtCookieAuth: []
+      summary: "Update a specific LEGO set"
+      tags:
+        - PUT
+      parameters:
+        - in: path
+          name: set_number
+          description: "The set number of the LEGO set"
+          schema:
+            type: string
+          required: true
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/lego_set'
+      responses:
+        "200":
+          description: "LEGO set updated"
+        "404":
+          description: "LEGO set not found"
+    delete:
+      security:
+        - jwtCookieAuth: []
+      summary: "Delete a specific LEGO set"
+      tags:
+        - DELETE
+      parameters:
+        - in: path
+          name: set_number
+          description: "The set number of the LEGO set"
+          schema:
+            type: string
+          required: true
+      responses:
+        "204":
+          description: "LEGO set deleted"
+        "404":
+          description: "LEGO set not found"
+  /themes:
+    get:
+      summary: "Get a list of lego themes"
+      tags:
+        - GET
+      responses:
+        "200":
+          description: "LEGO themes"
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/themes'
+  /themes/{theme_code}:
+    get:
+      summary: "Get the theme by its code"
+      tags:
+      - GET
+      parameters:
+        - in: path
+          name: theme_code
+          description: "The code of the LEGO theme"
+          schema:
+            type: string
+          required: true
+      responses:
+        "200":
+          description: "LEGO set"
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/themes_list'
+  /themes/{theme_code}/sets:
+    get:
+      summary: "Get sets by theme code"
+      tags:
+      - GET
+      parameters:
+        - in: path
+          name: theme_code
+          description: "The code of the LEGO theme"
+          schema:
+            type: string
+          required: true
+      responses:
+        "200":
+          description: "LEGO set"
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/lego_set_list'
+  /users/register:
+    post:
+      summary: "Register user"
+      tags:
+      - POST
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/registration'
+      responses:
+        "201":
+          description: "Registration successful"
+        "400":
+          description: "Invalid request payload"
+  /users/login:
+    post:
+      summary: "Login user"
+      tags:
+      - POST
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/login'
+      responses:
+        "200":
+          description: "Login successful"
+        "400":
+          description: "Invalid request payload"
+        
+components:
+  schemas:
+    lego_set:
+      type: object
+      properties:
+        set_number:
+          type: string
+          description: "The set number of the LEGO set"
+        theme_code:
+          type: string
+          description: "The theme of the LEGO set"
+        sub_theme_id:
+          type: integer
+          description: "The id of the sub theme"
+        piece_count:
+          type: integer
+          description: "The amount of pieces"
+        minifigure_count:
+          type: integer
+          description: "The amount of minifigs"
+        year:
+          type: integer
+          description: "The year the LEGO set was released"
+        translations:
+          type: array
+          items:
+            $ref: '#/components/schemas/translations'
+
+    lego_set_list:
+      type: object
+      properties:
+        total:
+          type: integer
+          description: "The total number of LEGO sets"
+        page:
+          type: integer
+          description: "The current page"
+        limit:
+          type: integer
+          description: "The number of results per page"
+        sets:
+          type: array
+          items:
+            $ref: '#/components/schemas/lego_set'
+    translations:
+      type: object
+      properties:
+        language:
+          type: string
+          description: "Language of the translation"
+        name:
+          type: string
+          description: "Name of the set in given language"
+        description:
+          type: string
+          description: "Description of the set in given language"
+    themes:
+      type: object
+      properties:
+        name:
+          type: string
+          description: "Name of the theme"
+        code:
+          type: string
+          description: "Code of the theme"
+    themes_list:
+      type: object
+      properties:
+        themes:
+          type: array
+          items:
+            $ref: '#/components/schemas/themes'
+    registration:
+      type: object
+      properties:
+        name:
+          type: string
+          description: "Name of user"
+        email:
+          type: string
+          description: "Email of user"
+        password:
+          type: string
+          description: "Password of user"
+    login:
+      type: object
+      properties:
+        email:
+          type: string
+          description: "Email of user"
+        password:
+          type: string
+          description: "Password of user"
+  securitySchemes:
+    jwtCookieAuth:
+      type: apiKey
+      in: cookie
+      name: token
